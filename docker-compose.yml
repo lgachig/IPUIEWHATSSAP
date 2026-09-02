@@ -14,6 +14,8 @@ services:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
       - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - WHATSAPP_GRUPO_JID=${WHATSAPP_GRUPO_JID}
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
@@ -22,7 +24,7 @@ services:
       evolution-api:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:5678/healthz"]
+      test: [ "CMD", "wget", "-q", "--spider", "http://127.0.0.1:5678/healthz" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -59,7 +61,7 @@ services:
       evolution-redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/"]
+      test: [ "CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -78,7 +80,7 @@ services:
     networks:
       - modo_integro_net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME} -d ${POSTGRES_DATABASE}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME} -d ${POSTGRES_DATABASE}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -93,7 +95,7 @@ services:
     networks:
       - modo_integro_net
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
