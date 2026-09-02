@@ -1,0 +1,22 @@
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Entorno y variables de entorno
+.env
+.env.*
+!.env.example
+
+# Logs y base de datos
+*.log
+*.sqlite
+*.db
+
+# Dependencias (si aplica)
+node_modules/
+
+# Reglas generales para archivos CSV, PDF y YML/YAML
+*.csv
+*.pdf
+*.yaml
