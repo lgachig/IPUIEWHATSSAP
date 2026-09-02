@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   n8n:
     image: n8nio/n8n:latest
@@ -21,10 +19,18 @@ services:
     networks:
       - modo_integro_net
     depends_on:
-      - evolution-api
+      evolution-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   evolution-api:
-    image: atendai/evolution-api:latest
+    # Imagen oficial de Evolution API; se fija la versión para despliegues reproducibles.
+    image: evoapicloud/evolution-api:v2.3.7
     container_name: modo_integro_evolution_api
     restart: unless-stopped
     ports:
@@ -35,11 +41,62 @@ services:
       - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
       - DEL_INSTANCE=false
       - LANGUAGE=es
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@evolution-postgres:5432/${POSTGRES_DATABASE}
+      - DATABASE_CONNECTION_CLIENT_NAME=modo_integro
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://evolution-redis:6379/1
+      - CACHE_REDIS_PREFIX_KEY=modo_integro
+      - CACHE_LOCAL_ENABLED=false
     volumes:
       - evolution_instances:/evolution/instances
       - evolution_store:/evolution/store
     networks:
       - modo_integro_net
+    depends_on:
+      evolution-postgres:
+        condition: service_healthy
+      evolution-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  evolution-postgres:
+    image: postgres:15-alpine
+    container_name: modo_integro_evolution_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - evolution_postgres_data:/var/lib/postgresql/data
+    networks:
+      - modo_integro_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME} -d ${POSTGRES_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  evolution-redis:
+    image: redis:7-alpine
+    container_name: modo_integro_evolution_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - evolution_redis_data:/data
+    networks:
+      - modo_integro_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   modo_integro_net:
@@ -51,4 +108,8 @@ volumes:
   evolution_instances:
     driver: local
   evolution_store:
+    driver: local
+  evolution_postgres_data:
+    driver: local
+  evolution_redis_data:
     driver: local
