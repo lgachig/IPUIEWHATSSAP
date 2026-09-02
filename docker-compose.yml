@@ -19,7 +19,14 @@ services:
     networks:
       - modo_integro_net
     depends_on:
-      - evolution-api
+      evolution-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   evolution-api:
     # Imagen oficial de Evolution API; se fija la versión para despliegues reproducibles.
@@ -51,6 +58,12 @@ services:
         condition: service_healthy
       evolution-redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   evolution-postgres:
     image: postgres:15-alpine
