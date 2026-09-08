@@ -1,0 +1,10 @@
+{
+  "description": "Admin dashboard for managing a biblical gamification system on WhatsApp, enabling moderators to track participants, scores, streaks, activities, and system logs efficiently.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
