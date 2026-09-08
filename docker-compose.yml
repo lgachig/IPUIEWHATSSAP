@@ -16,6 +16,7 @@ services:
       - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
       - WHATSAPP_GRUPO_JID=${WHATSAPP_GRUPO_JID}
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - RAG_SERVER_URL=${RAG_SERVER_URL:-http://rag:8000}
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
@@ -23,12 +24,43 @@ services:
     depends_on:
       evolution-api:
         condition: service_healthy
+      rag:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "wget", "-q", "--spider", "http://127.0.0.1:5678/healthz" ]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 60s
+
+  rag:
+    build:
+      context: ./rag-server
+      dockerfile: Dockerfile
+    image: modo_integro_rag:latest
+    container_name: modo_integro_rag
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - EMBEDDING_MODEL_NAME=${EMBEDDING_MODEL_NAME:-intfloat/multilingual-e5-small}
+      - UMBRAL_ALTO=${UMBRAL_ALTO:-0.85}
+      - UMBRAL_BAJO=${UMBRAL_BAJO:-0.70}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash-lite}
+      - VERSION_BIBLIA=${VERSION_BIBLIA:-RVR}
+    volumes:
+      - ./rag-server/app:/app/app
+    networks:
+      - modo_integro_net
+    healthcheck:
+      test: [ "CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://127.0.0.1:8000/salud\")' || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   evolution-api:
     # Imagen oficial de Evolution API; se fija la versión para despliegues reproducibles.
