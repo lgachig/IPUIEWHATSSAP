@@ -47,6 +47,10 @@ Este proyecto sigue un backlog organizado en 4 sprints (ver Jira). Progreso actu
 
 > Sprints siguientes: vinculación de WhatsApp, esquema en Supabase, envío diario automatizado, reconocimiento de respuestas y puntuación, comodines, dashboard de administrador, pruebas E2E y despliegue.
 
+## 📚 Manual de Instalación y Replicación
+
+Para replicar el sistema completo desde cero (base de datos en Supabase, servidor RAG Python, contenedores Docker y vinculación de WhatsApp), consulta el **[Manual General de Instalación](file:///Users/luchoflow/Downloads/PROYECTO%20WHATSSAP%20IPUIE/Manuales/MANUAL_INSTALACION_GENERAL.md)**.
+
 ## ⚙️ Cómo levantar el entorno (local, en desarrollo)
 
 ```bash

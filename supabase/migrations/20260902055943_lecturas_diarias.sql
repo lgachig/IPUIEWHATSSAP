@@ -5,6 +5,7 @@ create table lecturas_diarias (
   tema text,
   pregunta_reto text,
   respuesta_esperada text,
+  actividad text,
   created_at timestamptz default now()
 );
 
